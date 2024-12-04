@@ -20,21 +20,17 @@ public class Client {
     public Client() {
     }
 
-    public Client(Long id, String name, String cpf, Double income, LocalDate birthDate, Integer children) {
-        this.id = id;
-        this.name = name;
-        this.cpf = cpf;
-        this.income = income;
-        this.birthDate = birthDate;
-        this.children = children;
+    public Client(Client client) {
+        this.id = client.getId();
+        this.name = client.getName();
+        this.cpf = client.getCpf();
+        this.income = client.getIncome();
+        this.birthDate = client.getBirthDate();
+        this.children = client.getChildren();
     }
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -75,5 +71,17 @@ public class Client {
 
     public void setChildren(Integer children) {
         this.children = children;
+    }
+
+    @Override
+    public String toString() {
+        return "Client{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", cpf='" + cpf + '\'' +
+                ", income=" + income +
+                ", birthDate=" + birthDate +
+                ", children=" + children +
+                '}';
     }
 }
