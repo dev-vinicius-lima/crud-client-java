@@ -3,8 +3,9 @@ package com.crud.client.services;
 import com.crud.client.entities.Client;
 import com.crud.client.repositories.ClientRepository;
 import com.crud.client.services.exceptions.DatabaseException;
+import com.crud.client.services.exceptions.EntityNotFoundException;
+import com.crud.client.services.exceptions.NoSuchElementException;
 import com.crud.client.services.exceptions.ResourceNotFoundException;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -26,7 +27,7 @@ public class ClientService {
 
     @Transactional(readOnly = true)
     public Client findById(Long id) {
-        Client client = repository.findById(id).get();
+        Client client = repository.findById(id).orElseThrow(() -> new NoSuchElementException("Id não encontrado!"));
         return ResponseEntity.ok().body(client).getBody();
     }
 
@@ -45,8 +46,8 @@ public class ClientService {
             copyClientProperties(entity, client);
             entity = repository.save(entity);
             return new Client(entity);
-        } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException(e.getMessage());
+        } catch (jakarta.persistence.EntityNotFoundException e) {
+            throw new EntityNotFoundException("Cliente não encontrado na base de dados");
         }
     }
 
