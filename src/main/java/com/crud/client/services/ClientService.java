@@ -2,8 +2,11 @@ package com.crud.client.services;
 
 import com.crud.client.entities.Client;
 import com.crud.client.repositories.ClientRepository;
+import com.crud.client.services.exceptions.DatabaseException;
+import com.crud.client.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +47,17 @@ public class ClientService {
             return new Client(entity);
         } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException(e.getMessage());
+        }
+    }
+
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Recurso não encontrado.");
+        }
+        try {
+            repository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Falha na integridade referencial.");
         }
     }
 
