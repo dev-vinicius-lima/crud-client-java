@@ -49,7 +49,7 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<CustomError> handleConstraintViolation(ConstraintViolationException e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
-        ValidationError error = new ValidationError(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
+        ValidationError error = new ValidationError(Instant.now(), status.value(), "Dados inválidos.", request.getRequestURI());
 
         for (ConstraintViolation<?> violation : e.getConstraintViolations()) {
             String fieldName = violation.getPropertyPath().toString();
