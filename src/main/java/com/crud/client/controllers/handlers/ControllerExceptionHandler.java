@@ -1,18 +1,19 @@
 package com.crud.client.controllers.handlers;
 
 import com.crud.client.dto.CustomError;
-import com.crud.client.services.exceptions.DatabaseException;
-import com.crud.client.services.exceptions.EntityNotFoundException;
-import com.crud.client.services.exceptions.NoSuchElementException;
-import com.crud.client.services.exceptions.ResourceNotFoundException;
+import com.crud.client.dto.ValidationError;
+import com.crud.client.services.exceptions.*;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.coyote.Response;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.Instant;
+import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
@@ -31,17 +32,32 @@ public class ControllerExceptionHandler {
         return ResponseEntity.status(status).body(error);
     }
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<CustomError> EntityNotFound(EntityNotFoundException e, HttpServletRequest request) {
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<CustomError> NoSuchElement(NoSuchElementException e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.NOT_FOUND;
         CustomError error = new CustomError(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(status).body(error);
     }
 
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<CustomError> NoSuchElement(NoSuchElementException e, HttpServletRequest request) {
+    @ExceptionHandler(InvalidDefinitionException.class)
+    public ResponseEntity<CustomError> InvalidDefinition(InvalidDefinitionException e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.NOT_FOUND;
-        CustomError error = new CustomError(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
+        CustomError error = new CustomError(Instant.now(), status.value(), "Falha de integridade.", request.getRequestURI());
+        return ResponseEntity.status(status).body(error);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<CustomError> handleConstraintViolation(ConstraintViolationException e, HttpServletRequest request) {
+        HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
+        ValidationError error = new ValidationError(Instant.now(), status.value(), e.getMessage(), request.getRequestURI());
+
+        for (ConstraintViolation<?> violation : e.getConstraintViolations()) {
+            String fieldName = violation.getPropertyPath().toString();
+            String errorMessage = violation.getMessage();
+
+            error.addError(fieldName, errorMessage);
+        }
+
         return ResponseEntity.status(status).body(error);
     }
 }

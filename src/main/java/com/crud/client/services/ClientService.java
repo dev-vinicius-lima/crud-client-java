@@ -3,15 +3,15 @@ package com.crud.client.services;
 import com.crud.client.entities.Client;
 import com.crud.client.repositories.ClientRepository;
 import com.crud.client.services.exceptions.DatabaseException;
-import com.crud.client.services.exceptions.EntityNotFoundException;
-import com.crud.client.services.exceptions.NoSuchElementException;
 import com.crud.client.services.exceptions.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -27,7 +27,7 @@ public class ClientService {
 
     @Transactional(readOnly = true)
     public Client findById(Long id) {
-        Client client = repository.findById(id).orElseThrow(() -> new NoSuchElementException("Id não encontrado!"));
+        Client client = repository.findById(id).get();
         return ResponseEntity.ok().body(client).getBody();
     }
 
@@ -37,20 +37,18 @@ public class ClientService {
         copyClientProperties(entity, client);
         entity = repository.save(entity);
         return new Client(entity);
+
     }
 
     @Transactional
     public Client update(Long id, Client client) {
-        try {
-            Client entity = repository.getReferenceById(id);
-            copyClientProperties(entity, client);
-            entity = repository.save(entity);
-            return new Client(entity);
-        } catch (jakarta.persistence.EntityNotFoundException e) {
-            throw new EntityNotFoundException("Cliente não encontrado na base de dados");
-        }
+        Client entity = repository.getReferenceById(id);
+        copyClientProperties(entity, client);
+        entity = repository.save(entity);
+        return new Client(entity);
     }
 
+    //    @Transactional(propagation = Propagation.SUPPORTS)
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Recurso não encontrado.");

@@ -33,7 +33,6 @@ public class ClientController {
 
     @PostMapping
     public ResponseEntity<Client> insert(@RequestBody Client client) {
-        System.out.println("@RequestBody => " + client);
         Client result = clientService.insert(client);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
                 .buildAndExpand(result.getId()).toUri();
